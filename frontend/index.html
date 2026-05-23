@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatGPT Clone</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom scrollbar for message area */
+        .scrollbar-custom::-webkit-scrollbar {
+            width: 8px;
+        }
+        .scrollbar-custom::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .scrollbar-custom::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 20px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 flex flex-col h-screen text-gray-800 font-sans">
+    
+    <!-- Header -->
+    <header class="bg-white border-b shadow-sm py-4 px-6 flex items-center justify-between sticky top-0 z-10">
+        <h1 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+            </svg>
+            Simple ChatGPT Clone
+        </h1>
+    </header>
+
+    <!-- Messages Area -->
+    <main class="flex-1 overflow-y-auto p-4 sm:p-6 scrollbar-custom" id="chat-container">
+        <!-- Messages will be injected here dynamically -->
+        
+        <!-- Welcome Message -->
+        <div class="flex justify-center my-8" id="welcome-message">
+            <div class="text-center text-gray-500 max-w-md">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                <p class="text-lg font-medium text-gray-700">How can I help you today?</p>
+                <p class="text-sm mt-2">Enter a message below to start chatting with the AI.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Loading Indicator (Hidden by default) -->
+    <div id="loading-indicator" class="hidden justify-center items-center py-2 bg-gray-50">
+        <div class="flex items-center gap-2 text-gray-500 text-sm">
+            <svg class="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            AI is thinking...
+        </div>
+    </div>
+
+    <!-- Input Area -->
+    <footer class="bg-white border-t p-4 sm:p-6 flex flex-col">
+        <div class="max-w-4xl mx-auto w-full relative">
+            
+            <!-- File Preview Area -->
+            <div id="image-preview-container" class="hidden mb-3 relative inline-flex items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 shadow-sm">
+                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M6 2.75A2.25 2.25 0 003.75 5v14A2.25 2.25 0 006 21.25h12A2.25 2.25 0 0020.25 19V8.56a2.25 2.25 0 00-.659-1.591l-3.56-3.56A2.25 2.25 0 0014.44 2.75H6z" />
+                    </svg>
+                </div>
+                <div class="min-w-0">
+                    <p id="image-preview" class="truncate text-sm font-medium text-gray-700"></p>
+                    <p id="file-status" class="text-xs text-gray-500">Ready to upload</p>
+                </div>
+                <button id="remove-image-btn" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 shadow-md transition-colors" title="Remove file">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="relative flex items-center w-full">
+                <!-- Hidden File Input -->
+                <input type="file" id="image-upload" accept=".pdf,application/pdf" class="hidden">
+                
+                <!-- Attach Button -->
+                <button id="attach-btn" class="absolute left-2 bottom-2.5 p-2 text-gray-400 hover:text-gray-600 transition-colors" title="Attach PDF">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                    </svg>
+                </button>
+
+                <textarea 
+                    id="message-input"
+                    class="w-full bg-gray-100 border border-gray-300 rounded-2xl py-3 pl-10 pr-12 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-[52px] max-h-[200px]"
+                    placeholder="Ask about your file or chat normally..."
+                    rows="1"
+                ></textarea>
+                
+                <button 
+                    id="send-button"
+                    class="absolute right-2 bottom-2 p-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div class="text-center text-xs text-gray-400 mt-2">
+            Upload a PDF, then ask questions about it, or chat normally without a file.
+        </div>
+    </footer>
+
+    <!-- Main Application Module -->
+    <script type="module" src="/src/main.js"></script>
+</body>
+</html>
